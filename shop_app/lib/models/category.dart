@@ -18,5 +18,4 @@ class Category{
   final Color color;
 
   const Category( this.name, this.color );
-
 }
