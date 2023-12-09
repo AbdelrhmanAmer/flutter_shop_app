@@ -17,10 +17,10 @@ class MyApp extends StatelessWidget {
       theme: ThemeData.dark().copyWith(
         brightness: Brightness.dark,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.tealAccent,
-          surface: Colors.tealAccent.withOpacity(.6),
+          seedColor: Colors.orange,
+          // surface: Colors.tealAccent.withOpacity(.6),
         ),
-        // scaffoldBackgroundColor:  Colors.b,
+        scaffoldBackgroundColor:  Colors.black87,
       ),
 
       home: const GroceryList(),
