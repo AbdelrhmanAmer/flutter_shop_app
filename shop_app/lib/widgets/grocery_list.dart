@@ -1,6 +1,4 @@
 import 'dart:convert';
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:shop_app/data/categories.dart';
 import 'package:shop_app/widgets/new_item.dart';
@@ -21,46 +19,49 @@ class _GroceryListState extends State<GroceryList>
   bool isLoading = true;
   String? _error;
 
-  void _loadData() async{
+  void _loadData() async {
     final Uri url = Uri.https(
         'flutter-shop-3438e-default-rtdb.firebaseio.com',
         'shopping-list.json');
-    final http.Response response = await http.get(url);
-    if(response.statusCode >= 400){
-      setState(() {
-        _error = 'Failed to fetch data. Please try again later. ';
+      final http.Response response = await http.get(url).catchError((_){
+        return  http.Response('', 400);
       });
-    }
+      if (response.statusCode >= 400) {
+        setState(() {
+          _error = 'Failed to fetch data. Please try again later. ';
+        });
+        return;
+      }
+      if (response.body == 'null') {
+        setState(() {
+          isLoading = false;
+        });
+        return;
+      }
 
-    if(response.body == 'null'){
-      setState(() {
-        isLoading = false;
-      });
-      return;
-    }
-    final Map<String, dynamic> loadedData = json.decode(response.body);
-    // temp list
-    final List<GroceryItem> tempList = [];
+      final Map<String, dynamic> loadedData = json.decode(response.body);
 
-    for(var map in loadedData.entries){
-      final Category category =
-          categories.entries
-              .firstWhere(
-                  (element)=> element.value.name == map.value['category']
-          ).value;
-      tempList.add(
-        GroceryItem(
-            id: map.key,
-            name: map.value['name'],
-            quantity: map.value['quantity'],
-            category: category
-        ),
-      );
-      setState(() {
-        _groceryItems = tempList;
-        isLoading = false;
-      });
-    }
+      final List<GroceryItem> tempList = [];
+      for (var map in loadedData.entries) {
+        final Category category =
+            categories.entries
+                .firstWhere(
+                    (element) => element.value.name == map.value['category']
+            )
+                .value;
+        tempList.add(
+          GroceryItem(
+              id: map.key,
+              name: map.value['name'],
+              quantity: map.value['quantity'],
+              category: category
+          ),
+        );
+        setState(() {
+          _groceryItems = tempList;
+          isLoading = false;
+        });
+      }
   }
 
   @override
