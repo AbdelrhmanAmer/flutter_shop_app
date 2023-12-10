@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:shop_app/models/grocery_item.dart';
 import '../models/category.dart';
@@ -124,18 +126,24 @@ class _NewItemState extends State<NewItem> {
                   ),
                   const SizedBox(width: 20,),
                   ElevatedButton(
-                      onPressed: (){
+                      onPressed: ()async{
                         if(_formKey.currentState!.validate()) {
                           _formKey.currentState!.save();
-                          // http.get();
-                          Navigator.of(context).pop(
-                            GroceryItem(
-                                id: DateTime.now().toString(),
-                                name: _enteredName,
-                                quantity: _enteredQuantity,
-                                category: _selectedCategory
-                            ),
+                          final Uri url = Uri.https('flutter-shop-3438e-default-rtdb.firebaseio.com', 'shopping-list.json');
+                          final http.Response response = await http.post(
+                              url,
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: json.encode({
+                              'name': _enteredName,
+                              'quantity': _enteredQuantity,
+                              'category': _selectedCategory.name
+                            }),
                           );
+                          if(response.statusCode == 200){
+                            Navigator.of(context).pop( );
+                          }
                         }
                       },
                       child: const Text("Add Item")
