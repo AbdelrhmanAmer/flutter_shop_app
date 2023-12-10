@@ -1,5 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:shop_app/data/categories.dart';
 import 'package:shop_app/widgets/new_item.dart';
+import '../models/category.dart';
 import '../models/grocery_item.dart';
 import 'package:http/http.dart' as http;
 
@@ -10,15 +14,39 @@ class GroceryList extends StatefulWidget {
   State<GroceryList> createState() => _GroceryListState();
 }
 
-class _GroceryListState extends State<GroceryList> {
-  final List<GroceryItem> _groceryItems = [];
+class _GroceryListState extends State<GroceryList>
+{
+   List<GroceryItem> _groceryItems = [];
 
   void _loadData() async{
     final Uri url = Uri.https(
         'flutter-shop-3438e-default-rtdb.firebaseio.com',
         'shopping-list.json');
     final http.Response response = await http.get(url);
-    print(response.body.toString());
+    
+    final Map<String, dynamic> loadedData = json.decode(response.body);
+    // temp list
+    final List<GroceryItem> _tempList = [];
+
+    for(var map in loadedData.entries){
+      final Category category =
+          categories
+              .entries
+              .firstWhere(
+                  (element)=> element.value.name == map.value['category']
+          ).value;
+      _tempList.add(
+          GroceryItem(
+            id: map.key,
+            name: map.value['name'],
+            quantity: map.value['quantity'],
+            category: category
+      ),
+      );
+      setState(() {
+        _groceryItems = _tempList;
+      });
+    }
   }
 
   @override
