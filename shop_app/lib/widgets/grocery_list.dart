@@ -32,6 +32,12 @@ class _GroceryListState extends State<GroceryList>
       });
     }
 
+    if(response.body == 'null'){
+      setState(() {
+        isLoading = false;
+      });
+      return;
+    }
     final Map<String, dynamic> loadedData = json.decode(response.body);
     // temp list
     final List<GroceryItem> tempList = [];
@@ -86,14 +92,13 @@ class _GroceryListState extends State<GroceryList>
       ),
     ) ;
     Widget error()=>Center(child: Text(_error!,),);
-    void onDismissed(int index){ setState(() => _groceryItems.removeAt(index)); }
 
     return Scaffold(
       appBar: AppBar(
         title: const Text("Your Grocery"),
         actions: [
           IconButton(
-            onPressed: ()=>_addItem(),
+            onPressed: _addItem,
             icon: const Icon(Icons.add),
           )
         ],
@@ -106,7 +111,7 @@ class _GroceryListState extends State<GroceryList>
           itemBuilder: (ctx, index){
             return Dismissible(
               key: ValueKey(_groceryItems[index].id),
-              onDismissed: (_)=>onDismissed(index),
+              onDismissed: (_)=>_deleteItem(_groceryItems[index]),
               direction: DismissDirection.startToEnd,
               background: slideRightBackground,
               child: ListTile(
@@ -147,12 +152,38 @@ class _GroceryListState extends State<GroceryList>
     );
   }
 
-  _addItem()async{
+  void _addItem()async{
     final GroceryItem? newItem = await Navigator.of(context).push<GroceryItem>(
         MaterialPageRoute(builder: (ctx)=>const NewItem())
     );
     if(newItem == null){return;}
 
     setState(() => _groceryItems.add(newItem));
+  }
+
+  void _deleteItem(GroceryItem item)async{
+    final int index = _groceryItems.indexOf(item);
+    setState(() {
+      _groceryItems.remove(item);
+    });
+
+    final Uri url = Uri.https(
+        'flutter-shop-3438e-default-rtdb.firebaseio.com',
+        'shopping-list/${item.id}.json');
+    final http.Response response = await http.delete( url, );
+
+    if(response.statusCode >= 400) {
+      ScaffoldMessenger.of(context).showSnackBar(
+           SnackBar(
+             content: const Text("error, on removing item from the database..!"),
+             backgroundColor: Colors.red[500],
+             dismissDirection: DismissDirection.startToEnd,
+          )
+      );
+      setState(() {
+        _groceryItems.insert(index, item);
+      });
+
+    }
   }
 }
