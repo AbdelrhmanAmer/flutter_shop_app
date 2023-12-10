@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shop_app/widgets/new_item.dart';
 import '../models/grocery_item.dart';
+import 'package:http/http.dart' as http;
 
 class GroceryList extends StatefulWidget {
   const GroceryList({super.key});
@@ -11,6 +12,20 @@ class GroceryList extends StatefulWidget {
 
 class _GroceryListState extends State<GroceryList> {
   final List<GroceryItem> _groceryItems = [];
+
+  void _loadData() async{
+    final Uri url = Uri.https(
+        'flutter-shop-3438e-default-rtdb.firebaseio.com',
+        'shopping-list.json');
+    final http.Response response = await http.get(url);
+    print(response.body.toString());
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,16 +60,7 @@ class _GroceryListState extends State<GroceryList> {
         title: const Text("Your Grocery"),
         actions: [
           IconButton(
-            onPressed: (){
-              Navigator.of(context).push<GroceryItem>(
-                MaterialPageRoute(builder: (ctx)=>const NewItem())
-              ).then((value){
-                if(value == null) return ;
-                setState(() {
-                  _groceryItems.add(value);
-                });
-              });
-            },
+            onPressed: ()=>_addItem(),
             icon: const Icon(Icons.add),
           )
         ],
@@ -105,5 +111,12 @@ class _GroceryListState extends State<GroceryList> {
           }
       ),
     );
+  }
+
+  _addItem()async{
+    await Navigator.of(context).push<GroceryItem>(
+        MaterialPageRoute(builder: (ctx)=>const NewItem())
+    );
+    _loadData();
   }
 }

@@ -129,7 +129,9 @@ class _NewItemState extends State<NewItem> {
                       onPressed: ()async{
                         if(_formKey.currentState!.validate()) {
                           _formKey.currentState!.save();
-                          final Uri url = Uri.https('flutter-shop-3438e-default-rtdb.firebaseio.com', 'shopping-list.json');
+                          final Uri url = Uri.https(
+                              'flutter-shop-3438e-default-rtdb.firebaseio.com',
+                              'shopping-list.json');
                           final http.Response response = await http.post(
                               url,
                             headers: {
