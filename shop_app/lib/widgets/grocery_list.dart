@@ -23,7 +23,7 @@ class _GroceryListState extends State<GroceryList>
 
   void _loadData() async{
     final Uri url = Uri.https(
-        'qflutter-shop-3438e-default-rtdb.firebaseio.com',
+        'flutter-shop-3438e-default-rtdb.firebaseio.com',
         'shopping-list.json');
     final http.Response response = await http.get(url);
     if(response.statusCode >= 400){
@@ -38,8 +38,7 @@ class _GroceryListState extends State<GroceryList>
 
     for(var map in loadedData.entries){
       final Category category =
-          categories
-              .entries
+          categories.entries
               .firstWhere(
                   (element)=> element.value.name == map.value['category']
           ).value;
@@ -68,7 +67,6 @@ class _GroceryListState extends State<GroceryList>
   Widget build(BuildContext context) {
     Widget emptyPage = const Center(child: Text("No items added yet."));
     Widget loadingPage = const Center(child: CircularProgressIndicator(),);
-    Widget errorPage = Center(child: Text(_error!,),);
     Widget slideRightBackground = Container(
       color: Colors.red[400],
       padding: const EdgeInsets.all(16),
@@ -87,6 +85,7 @@ class _GroceryListState extends State<GroceryList>
         ],
       ),
     ) ;
+    Widget error()=>Center(child: Text(_error!,),);
     void onDismissed(int index){ setState(() => _groceryItems.removeAt(index)); }
 
     return Scaffold(
@@ -100,7 +99,7 @@ class _GroceryListState extends State<GroceryList>
         ],
       ),
       body: _error != null
-          ? errorPage   : isLoading
+          ? error()  : isLoading
           ? loadingPage : _groceryItems.isEmpty
           ? emptyPage   : ListView.builder(
           itemCount: _groceryItems.length,
