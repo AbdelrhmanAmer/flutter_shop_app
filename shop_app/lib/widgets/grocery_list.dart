@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ffi';
 
 import 'package:flutter/material.dart';
 import 'package:shop_app/data/categories.dart';
@@ -17,14 +18,19 @@ class GroceryList extends StatefulWidget {
 class _GroceryListState extends State<GroceryList>
 {
   List<GroceryItem> _groceryItems = [];
-
   bool isLoading = true;
+  String? _error;
 
   void _loadData() async{
     final Uri url = Uri.https(
-        'flutter-shop-3438e-default-rtdb.firebaseio.com',
+        'qflutter-shop-3438e-default-rtdb.firebaseio.com',
         'shopping-list.json');
     final http.Response response = await http.get(url);
+    if(response.statusCode >= 400){
+      setState(() {
+        _error = 'Failed to fetch data. Please try again later. ';
+      });
+    }
 
     final Map<String, dynamic> loadedData = json.decode(response.body);
     // temp list
@@ -62,6 +68,7 @@ class _GroceryListState extends State<GroceryList>
   Widget build(BuildContext context) {
     Widget emptyPage = const Center(child: Text("No items added yet."));
     Widget loadingPage = const Center(child: CircularProgressIndicator(),);
+    Widget errorPage = Center(child: Text(_error!,),);
     Widget slideRightBackground = Container(
       color: Colors.red[400],
       padding: const EdgeInsets.all(16),
@@ -80,12 +87,7 @@ class _GroceryListState extends State<GroceryList>
         ],
       ),
     ) ;
-    void onDismissed(int index){
-      setState(() {
-        _groceryItems.removeAt(index);
-      });
-    }
-
+    void onDismissed(int index){ setState(() => _groceryItems.removeAt(index)); }
 
     return Scaffold(
       appBar: AppBar(
@@ -97,11 +99,10 @@ class _GroceryListState extends State<GroceryList>
           )
         ],
       ),
-      body: isLoading
-          ? loadingPage
-          : _groceryItems.isEmpty
-          ? emptyPage
-          : ListView.builder(
+      body: _error != null
+          ? errorPage   : isLoading
+          ? loadingPage : _groceryItems.isEmpty
+          ? emptyPage   : ListView.builder(
           itemCount: _groceryItems.length,
           itemBuilder: (ctx, index){
             return Dismissible(
@@ -151,11 +152,8 @@ class _GroceryListState extends State<GroceryList>
     final GroceryItem? newItem = await Navigator.of(context).push<GroceryItem>(
         MaterialPageRoute(builder: (ctx)=>const NewItem())
     );
-    if(newItem == null){
-      return ;
-    }
-    setState(() {
-      _groceryItems.add(newItem);
-    });
+    if(newItem == null){return;}
+
+    setState(() => _groceryItems.add(newItem));
   }
 }
