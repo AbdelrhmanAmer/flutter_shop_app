@@ -16,14 +16,16 @@ class GroceryList extends StatefulWidget {
 
 class _GroceryListState extends State<GroceryList>
 {
-   List<GroceryItem> _groceryItems = [];
+  List<GroceryItem> _groceryItems = [];
+
+  bool isLoading = true;
 
   void _loadData() async{
     final Uri url = Uri.https(
         'flutter-shop-3438e-default-rtdb.firebaseio.com',
         'shopping-list.json');
     final http.Response response = await http.get(url);
-    
+
     final Map<String, dynamic> loadedData = json.decode(response.body);
     // temp list
     final List<GroceryItem> tempList = [];
@@ -36,15 +38,16 @@ class _GroceryListState extends State<GroceryList>
                   (element)=> element.value.name == map.value['category']
           ).value;
       tempList.add(
-          GroceryItem(
+        GroceryItem(
             id: map.key,
             name: map.value['name'],
             quantity: map.value['quantity'],
             category: category
-      ),
+        ),
       );
       setState(() {
         _groceryItems = tempList;
+        isLoading = false;
       });
     }
   }
@@ -57,25 +60,26 @@ class _GroceryListState extends State<GroceryList>
 
   @override
   Widget build(BuildContext context) {
-    Widget emptyItemsContent = const Center(child: Text("No items added yet."));
+    Widget emptyPage = const Center(child: Text("No items added yet."));
+    Widget loadingPage = const Center(child: CircularProgressIndicator(),);
     Widget slideRightBackground = Container(
-        color: Colors.red[400],
-        padding: const EdgeInsets.all(16),
-        child: const Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Icon(Icons.delete, size: 25,),
-            SizedBox(width: 15,),
-            Text(
-              "Delete",
-              style: TextStyle(
+      color: Colors.red[400],
+      padding: const EdgeInsets.all(16),
+      child: const Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Icon(Icons.delete, size: 25,),
+          SizedBox(width: 15,),
+          Text(
+            "Delete",
+            style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.bold
-              ),
-            )
-          ],
-        ),
-      ) ;
+            ),
+          )
+        ],
+      ),
+    ) ;
     void onDismissed(int index){
       setState(() {
         _groceryItems.removeAt(index);
@@ -93,8 +97,10 @@ class _GroceryListState extends State<GroceryList>
           )
         ],
       ),
-      body: _groceryItems.isEmpty
-          ? emptyItemsContent
+      body: isLoading
+          ? loadingPage
+          : _groceryItems.isEmpty
+          ? emptyPage
           : ListView.builder(
           itemCount: _groceryItems.length,
           itemBuilder: (ctx, index){
@@ -137,7 +143,7 @@ class _GroceryListState extends State<GroceryList>
               ),
             );
           }
-      ),
+      )
     );
   }
 

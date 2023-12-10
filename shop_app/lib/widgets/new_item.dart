@@ -15,9 +15,47 @@ class NewItem extends StatefulWidget {
 
 class _NewItemState extends State<NewItem> {
   final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
   String _enteredName = "";
   int _enteredQuantity = 0;
   Category _selectedCategory = categories[Categories.fruit]!;
+
+  void _saveItem(){
+    if(_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+      setState(() {
+        _isLoading = true;
+      });
+      final Uri url = Uri.https(
+          'flutter-shop-3438e-default-rtdb.firebaseio.com',
+          'shopping-list.json');
+
+      http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: json.encode({
+          'name': _enteredName,
+          'quantity': _enteredQuantity,
+          'category': _selectedCategory.name
+        }),
+      ).then((response){
+        if(response.statusCode == 200){
+          final Map<String, dynamic> loadedData = json.decode(response.body);
+          Navigator.of(context).pop(
+              GroceryItem(
+                  id: loadedData['name'],
+                  name: _enteredName,
+                  quantity: _enteredQuantity,
+                  category: _selectedCategory
+              )
+          );
+        }
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -119,46 +157,15 @@ class _NewItemState extends State<NewItem> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   TextButton(
-                      onPressed: (){
-                        _formKey.currentState!.reset();
-                      },
+                      onPressed: _isLoading? null: ()=>_formKey.currentState!.reset(),
                       child: const Text("Reset")
                   ),
                   const SizedBox(width: 20,),
                   ElevatedButton(
-                      onPressed: (){
-                        if(_formKey.currentState!.validate()) {
-                          _formKey.currentState!.save();
-                          final Uri url = Uri.https(
-                              'flutter-shop-3438e-default-rtdb.firebaseio.com',
-                              'shopping-list.json');
-
-                          http.post(
-                            url,
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: json.encode({
-                              'name': _enteredName,
-                              'quantity': _enteredQuantity,
-                              'category': _selectedCategory.name
-                            }),
-                          ).then((response){
-                            if(response.statusCode == 200){
-                              final Map<String, dynamic> loadedData = json.decode(response.body);
-                              Navigator.of(context).pop(
-                                GroceryItem(
-                                    id: loadedData['name'],
-                                    name: _enteredName,
-                                    quantity: _enteredQuantity,
-                                    category: _selectedCategory
-                                )
-                              );
-                            }
-                          });
-                        }
-                      },
-                      child: const Text("Add Item")
+                      onPressed: _isLoading ? null : _saveItem,
+                      child: _isLoading
+                          ? const SizedBox(width: 16, height: 16,child: CircularProgressIndicator(),)
+                          : const Text("Add Item")
                   )
                 ],
               )
