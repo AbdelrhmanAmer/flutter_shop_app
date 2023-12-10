@@ -126,14 +126,15 @@ class _NewItemState extends State<NewItem> {
                   ),
                   const SizedBox(width: 20,),
                   ElevatedButton(
-                      onPressed: ()async{
+                      onPressed: (){
                         if(_formKey.currentState!.validate()) {
                           _formKey.currentState!.save();
                           final Uri url = Uri.https(
                               'flutter-shop-3438e-default-rtdb.firebaseio.com',
                               'shopping-list.json');
-                          final http.Response response = await http.post(
-                              url,
+
+                          http.post(
+                            url,
                             headers: {
                                 'Content-Type': 'application/json'
                             },
@@ -142,10 +143,19 @@ class _NewItemState extends State<NewItem> {
                               'quantity': _enteredQuantity,
                               'category': _selectedCategory.name
                             }),
-                          );
-                          if(response.statusCode == 200){
-                            Navigator.of(context).pop( );
-                          }
+                          ).then((response){
+                            if(response.statusCode == 200){
+                              final Map<String, dynamic> loadedData = json.decode(response.body);
+                              Navigator.of(context).pop(
+                                GroceryItem(
+                                    id: loadedData['name'],
+                                    name: _enteredName,
+                                    quantity: _enteredQuantity,
+                                    category: _selectedCategory
+                                )
+                              );
+                            }
+                          });
                         }
                       },
                       child: const Text("Add Item")

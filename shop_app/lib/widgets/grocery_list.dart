@@ -26,7 +26,7 @@ class _GroceryListState extends State<GroceryList>
     
     final Map<String, dynamic> loadedData = json.decode(response.body);
     // temp list
-    final List<GroceryItem> _tempList = [];
+    final List<GroceryItem> tempList = [];
 
     for(var map in loadedData.entries){
       final Category category =
@@ -35,7 +35,7 @@ class _GroceryListState extends State<GroceryList>
               .firstWhere(
                   (element)=> element.value.name == map.value['category']
           ).value;
-      _tempList.add(
+      tempList.add(
           GroceryItem(
             id: map.key,
             name: map.value['name'],
@@ -44,7 +44,7 @@ class _GroceryListState extends State<GroceryList>
       ),
       );
       setState(() {
-        _groceryItems = _tempList;
+        _groceryItems = tempList;
       });
     }
   }
@@ -142,9 +142,14 @@ class _GroceryListState extends State<GroceryList>
   }
 
   _addItem()async{
-    await Navigator.of(context).push<GroceryItem>(
+    final GroceryItem? newItem = await Navigator.of(context).push<GroceryItem>(
         MaterialPageRoute(builder: (ctx)=>const NewItem())
     );
-    _loadData();
+    if(newItem == null){
+      return ;
+    }
+    setState(() {
+      _groceryItems.add(newItem);
+    });
   }
 }
