@@ -3,7 +3,7 @@ import 'package:shop_app/widgets/new_item.dart';
 import '../models/grocery_item.dart';
 
 class GroceryList extends StatefulWidget {
-  GroceryList({super.key});
+  const GroceryList({super.key});
 
   @override
   State<GroceryList> createState() => _GroceryListState();
@@ -15,8 +15,7 @@ class _GroceryListState extends State<GroceryList> {
   @override
   Widget build(BuildContext context) {
     Widget emptyItemsContent = const Center(child: Text("No items added yet."));
-    Widget slideRightBackground(){
-      return Container(
+    Widget slideRightBackground = Container(
         color: Colors.red[400],
         padding: const EdgeInsets.all(16),
         child: const Row(
@@ -34,12 +33,13 @@ class _GroceryListState extends State<GroceryList> {
           ],
         ),
       ) ;
-    }
-    onDismissed(int index){
+    void onDismissed(int index){
       setState(() {
         _groceryItems.removeAt(index);
       });
     }
+
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Your Grocery"),
@@ -59,7 +59,7 @@ class _GroceryListState extends State<GroceryList> {
           )
         ],
       ),
-      body:_groceryItems.isEmpty
+      body: _groceryItems.isEmpty
           ? emptyItemsContent
           : ListView.builder(
           itemCount: _groceryItems.length,
@@ -68,7 +68,7 @@ class _GroceryListState extends State<GroceryList> {
               key: ValueKey(_groceryItems[index].id),
               onDismissed: (_)=>onDismissed(index),
               direction: DismissDirection.startToEnd,
-              background: slideRightBackground(),
+              background: slideRightBackground,
               child: ListTile(
                 title: Text(
                   _groceryItems[index].name,

@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor:  Colors.black87,
       ),
 
-      home:  GroceryList(),
+      home: const GroceryList(),
     );
   }
 }

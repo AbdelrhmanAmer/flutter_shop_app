@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shop_app/models/grocery_item.dart';
 import '../models/category.dart';
 import '../data/categories.dart';
+import 'package:http/http.dart' as http;
 
 class NewItem extends StatefulWidget {
   const NewItem({super.key});
@@ -29,7 +30,7 @@ class _NewItemState extends State<NewItem> {
             children: [
               TextFormField(
                 decoration:  InputDecoration(
-                  labelText: 'Name',
+                  labelText: 'Item Name',
                   labelStyle: TextStyle(
                     fontSize: 20,
                     color: Theme.of(context).colorScheme.primaryContainer,
@@ -126,6 +127,7 @@ class _NewItemState extends State<NewItem> {
                       onPressed: (){
                         if(_formKey.currentState!.validate()) {
                           _formKey.currentState!.save();
+                          // http.get();
                           Navigator.of(context).pop(
                             GroceryItem(
                                 id: DateTime.now().toString(),
